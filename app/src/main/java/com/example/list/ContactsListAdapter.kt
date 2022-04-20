@@ -1,6 +1,7 @@
 package com.example.list
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 
@@ -18,6 +19,22 @@ class ContactsListAdapter(val itemList : List<Contacts>) :
 
     override fun onBindViewHolder(holder: ContactsViewHolder, position: Int) {
         val item = itemList[position]
-        holder.apply { bind(item) }
+
+        holder.itemView.setOnClickListener {
+            itemClickListener.onClick(it, position)
+        }
+        holder.apply {
+            bind(item)
+        }
+    }
+
+    //ClickListener
+    interface OnItemClickListener {
+        fun onClick(v: View, position: Int)
+    }
+    private lateinit var itemClickListener : OnItemClickListener
+
+    fun setItemClickListener(itemClickListener: OnItemClickListener) {
+        this.itemClickListener = itemClickListener
     }
 }
