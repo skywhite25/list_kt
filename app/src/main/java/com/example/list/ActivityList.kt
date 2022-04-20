@@ -29,7 +29,7 @@ class ListActivity : Activity(){
                 val item = contactsList[position]
 
                 Toast.makeText(v.context, "Activity\n${item.name}\n${item.tel}", Toast.LENGTH_SHORT).show()
-                /*item.name = item.name + "1"*/
+                item.name = item.name + "1"
                 adapter.notifyDataSetChanged()
             }
         })
