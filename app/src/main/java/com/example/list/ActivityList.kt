@@ -2,41 +2,67 @@ package com.example.list
 
 import android.app.Activity
 import android.os.Bundle
+import android.util.Log
 import android.view.View
-import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_list.*
+import kotlin.random.Random
 
 class ListActivity : Activity(){
-
-    var contactsList = mutableListOf(
-        Contacts("김김김", "111-1111-1111"),
-        Contacts("이이이", "222-2222-2222"),
-        Contacts("박박박", "333-3333-3333"),
-        Contacts("최최최", "444-4444-4444"),
-        Contacts("정정정", "555-5555-5555"),
-        Contacts("강강강", "666-6666-6666"),
-        Contacts("성성성", "777-7777-7777"),
-        Contacts("금금금", "888-8888-8888")
-    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_list)
         var count = 0
 
+        val TAG = "ActivityList"
+
+        var db : AppDataBase? = null
+        var contactsList = mutableListOf<Contacts>()
+
+        // 초기화
+        db = AppDataBase.getInstance(this)
+
+        // 이전에 저장한 내용 모두 불러와서 추가
+        val savedContacts = db!!.contactsDao().getAll()
+        if(savedContacts.isNotEmpty()){
+            contactsList.addAll(savedContacts)
+        }
+
         val adapter = ContactsListAdapter(contactsList)
+
+        adapter.setItemClickListener(object : ContactsListAdapter.OnItemClickListener{
+
+        // delete DB
+        override fun onClick(v: View, position: Int) {
+
+            val contacts = contactsList[position]
+
+            db?.contactsDao()?.delete(contacts = contacts) // DB에서 삭제
+            contactsList.removeAt(position) // 리스트에서 삭제
+            adapter.notifyDataSetChanged() // 리스트 갱신
+
+            Log.d(TAG, "remove item($position).name:${contacts.name}")
+        }
+    })
+
+        // add DB
         mBtnAdd.setOnClickListener{
-            var contact = Contacts("Add${count++}", "000-0000-0000")
-            contactsList.add(contact)
+
+            // 랜덤 번호 생성
+            val numA = Random.nextInt(1000)
+            val numB = Random.nextInt(10000)
+            val numC = Random.nextInt(10000)
+            val rdNum = String.format("%03d-%04d-%04d", numA, numB, numC)
+
+            val contact = Contacts(0, "New $numA", rdNum) // create contact
+            db?.contactsDao()?.insertAll(contact) // add in DB
+            contactsList.add(contact) // add list
 
             adapter.notifyDataSetChanged()
         }
-        adapter.setItemClickListener(object : ContactsListAdapter.OnItemClickListener{
-            override fun onClick(v: View, position: Int) {
-                contactsList.removeAt(position)
-                adapter.notifyDataSetChanged()
-            }
-        })
+
         mRecyclerView.adapter = adapter
     }
+
+
 }
